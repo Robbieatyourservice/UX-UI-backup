@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticity Module</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .auth-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            transition: 0.2s ease-in-out;
+        }
+
+        .auth-image img {
+            width: 70px;
+            height: 70px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .auth-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .auth-text strong {
+            font-weight: 600;
+            color: black;
+        }
+
+        .auth-text p {
+            font-size: 12px;
+            color: black;
+            line-height: 1.7;
+        }   
+
+        /* Overlay and Modal - interactive fix */
+        .auth-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            transition: all 0.2s ease-in-out !important;
+            z-index: 999999 !important;
+            pointer-events: none !important;
+        }
+
+        .auth-overlay.active {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .auth-modal {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) scale(0.95) !important;
+            background: white !important;
+            padding: 25px 30px !important;
+            width: 90% !important;
+            max-width: 700px !important;
+            border-radius: 12px !important;
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2) !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            transition: all 0.2s ease-in-out !important;
+            z-index: 1000000 !important;
+            pointer-events: none !important;
+        }
+
+        .auth-modal.active {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: translate(-50%, -50%) scale(1) !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Make sure all elements inside the modal are interactive */
+        .auth-modal.active * {
+            pointer-events: auto !important;
+        }
+
+        .auth-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .auth-heading {
+            font-size: 18px;
+            color: black;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+
+        .auth-modal p {
+            color: black;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        /* Fixed scroll lock style with namespaced class */
+        html.auth-modal-open {
+            overflow: hidden !important;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container" onclick="authOpenModal()">
+        <div class="auth-image">
+            <img src="https://underkicks.com/wp-content/uploads/2025/03/quality-control-image-2.png" alt="Authenticity">
+        </div>
+        <div class="auth-text">
+            <strong>Quality Control Certified</strong>
+            <p>We conduct strict quality checks on all supplier products.</p>
+        </div>
+    </div>
+
+    <div class="auth-overlay" id="authOverlay"></div>
+
+    <div class="auth-modal" id="authenticityModal">
+        <div class="auth-close-btn" onclick="authCloseModal()">&times;</div>
+        <h3 class="auth-heading">Quality Control Process <i class="fa-solid fa-check-circle" style="color: green;"></i></h3>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <p><strong>Inspected for Perfection</strong><br>
+            Each product is meticulously inspected, ensuring precision in materials, stitching, tags, and overall craftsmanship. <a href="https://underkicks.com/quality-control-process/">Learn more</a></p>
+            <p><strong>Uncompromising Standards, Every Time</strong><br>
+            A thorough multi-step verification process guarantees excellence in packaging, sizing, and finishing before it reaches you. <a href="https://underkicks.com/quality-control-process/">Learn more</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced ScrollLock for Authenticity modal with additional fixes
+        const AuthScrollLock = {
+            scrollY: 0,
+            scrollX: 0,
+            bodyWidth: 0,
+            
+            lock: function() {
+                // Store current window scroll position and body width
+                this.scrollY = window.scrollY || window.pageYOffset;
+                this.scrollX = window.scrollX || window.pageXOffset;
+                this.bodyWidth = document.body.clientWidth;
+                
+                // Add modal-open class to html
+                document.documentElement.classList.add('auth-modal-open');
+                
+                // Preserve the background position without shifting content
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${this.scrollY}px`;
+                document.body.style.left = '0';
+                document.body.style.right = '0';
+                document.body.style.bottom = '0';
+                document.body.style.width = '100%';
+                
+                // Prevent background scrolling but maintain visual appearance
+                document.body.style.overflow = 'hidden';
+                
+                // Ensure modal stays in position
+                const modal = document.getElementById('authenticityModal');
+                modal.style.position = 'fixed';
+            },
+            
+            unlock: function() {
+                // Remove modal-open class
+                document.documentElement.classList.remove('auth-modal-open');
+                
+                // Remove inline styles
+                document.body.style.position = '';
+                document.body.style.width = '';
+                document.body.style.top = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
+                document.body.style.bottom = '';
+                document.body.style.overflow = '';
+                
+                // Restore exact scroll position
+                window.scrollTo(this.scrollX, this.scrollY);
+                
+                // Reset modal position
+                const modal = document.getElementById('authenticityModal');
+                modal.style.position = 'fixed';
+            }
+        };
+        
+        // Event handler for ESC key
+        function authHandleEscKey(e) {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                authCloseModal();
+            }
+        }
+        
+        // Event handler for overlay click
+        function authHandleOverlayClick(e) {
+            if (e.target === document.getElementById('authOverlay')) {
+                authCloseModal();
+            }
+        }
+        
+        function authOpenModal() {
+            // Lock scroll first - before showing modal
+            AuthScrollLock.lock();
+            
+            // Then activate modal - immediately without delay
+            document.getElementById('authenticityModal').classList.add('active');
+            document.getElementById('authOverlay').classList.add('active');
+            
+            // Add event listeners
+            document.addEventListener('keydown', authHandleEscKey);
+            document.getElementById('authOverlay').addEventListener('click', authHandleOverlayClick);
+        }
+        
+        function authCloseModal() {
+            // Hide modal first
+            document.getElementById('authenticityModal').classList.remove('active');
+            document.getElementById('authOverlay').classList.remove('active');
+            
+            // Almost immediate unlocking of scroll
+            setTimeout(function() {
+                AuthScrollLock.unlock();
+            }, 10);
+            
+            // Remove event listeners
+            document.removeEventListener('keydown', authHandleEscKey);
+            document.getElementById('authOverlay').removeEventListener('click', authHandleOverlayClick);
+        }
+    </script>
+</body>
+</html>

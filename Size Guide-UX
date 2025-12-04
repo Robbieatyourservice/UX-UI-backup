@@ -1,0 +1,219 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Size Guide</title>
+        <script src="https://kit.fontawesome.com/YOUR-FONT-AWESOME-KIT.js" crossorigin="anonymous"></script>
+        <style>
+            /* Style for Size Guide button */
+            .size-guide {
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+                font-family: 'Poppins', sans-serif;
+                text-decoration: none;
+                color: #000;
+                background: none;
+                padding: 3px 8px;
+                border-radius: 4px;
+                width: fit-content;
+                cursor: pointer;
+                transition: color 0.2s ease;
+            }
+            .size-guide:hover {
+                color: #555;
+            }
+            .size-guide i {
+                margin-right: 5px;
+                font-size: 12px;
+            }
+            
+            /* Modal Styles - Matching Quality Control modal with visibility/opacity pattern */
+            .sg-overlay {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: rgba(0, 0, 0, 0.6) !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                transition: all 0.2s ease-in-out !important;
+                z-index: 999999 !important;
+                pointer-events: none !important;
+            }
+    
+            .sg-overlay.active {
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            
+            .sg-modal {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) scale(0.95) !important;
+                background: white !important;
+                padding: 25px !important;
+                width: 90% !important;
+                max-width: 700px !important;
+                border-radius: 12px !important;
+                box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2) !important;
+                text-align: center !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                transition: all 0.2s ease-in-out !important;
+                z-index: 1000000 !important;
+                pointer-events: none !important;
+            }
+            
+            .sg-modal.active {
+                visibility: visible !important;
+                opacity: 1 !important;
+                transform: translate(-50%, -50%) scale(1) !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Make sure all elements inside the modal are interactive */
+            .sg-modal.active * {
+                pointer-events: auto !important;
+            }
+            
+            .sg-modal img {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .sg-close {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                cursor: pointer;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+            }
+            
+            /* Fixed html and body styles for scroll locking - isolated namespace */
+            html.sg-modal-open {
+                overflow: hidden !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Size Guide Button -->
+        <div class="size-guide" onclick="sgOpenModal()">
+            <i class="fas fa-ruler"></i> Size Guide
+        </div>
+        
+        <!-- Modal Overlay -->
+        <div id="sgOverlay" class="sg-overlay"></div>
+        
+        <!-- Modal Content -->
+        <div id="sgSizeModal" class="sg-modal">
+            <span class="sg-close" onclick="sgCloseModal()">&times;</span>
+            <img src="https://underkicks.com/wp-content/uploads/2025/03/Untitled-design-77.png" alt="Size Guide">
+        </div>
+        
+        <script>
+            // Enhanced ScrollLock for Size Guide modal
+            const SizeGuideScrollLock = {
+                scrollY: 0,
+                scrollX: 0,
+                bodyWidth: 0,
+                
+                lock: function() {
+                    // Store current window scroll position and body width
+                    this.scrollY = window.scrollY || window.pageYOffset;
+                    this.scrollX = window.scrollX || window.pageXOffset;
+                    this.bodyWidth = document.body.clientWidth;
+                    
+                    // Add modal-open class to html
+                    document.documentElement.classList.add('sg-modal-open');
+                    
+                    // Preserve the background position without shifting content
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = `-${this.scrollY}px`;
+                    document.body.style.left = '0';
+                    document.body.style.right = '0';
+                    document.body.style.bottom = '0';
+                    document.body.style.width = '100%';
+                    
+                    // Prevent background scrolling but maintain visual appearance
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Ensure modal stays in position
+                    const modal = document.getElementById('sgSizeModal');
+                    modal.style.position = 'fixed';
+                },
+                
+                unlock: function() {
+                    // Remove modal-open classes
+                    document.documentElement.classList.remove('sg-modal-open');
+                    
+                    // Remove inline styles
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.top = '';
+                    document.body.style.left = '';
+                    document.body.style.right = '';
+                    document.body.style.bottom = '';
+                    document.body.style.overflow = '';
+                    
+                    // Restore exact scroll position
+                    window.scrollTo(this.scrollX, this.scrollY);
+                    
+                    // Reset modal position
+                    const modal = document.getElementById('sgSizeModal');
+                    modal.style.position = 'fixed';
+                }
+            };
+            
+            // Event handler for ESC key
+            function sgHandleEscKey(e) {
+                if (e.key === 'Escape' || e.key === 'Esc') {
+                    sgCloseModal();
+                }
+            }
+            
+            // Event handler for overlay click
+            function sgHandleOverlayClick(e) {
+                if (e.target === document.getElementById('sgOverlay')) {
+                    sgCloseModal();
+                }
+            }
+            
+            function sgOpenModal() {
+                // Lock scrolling when modal opens
+                SizeGuideScrollLock.lock();
+                
+                // Then activate modal and overlay immediately
+                document.getElementById('sgSizeModal').classList.add('active');
+                document.getElementById('sgOverlay').classList.add('active');
+                
+                // Add event listeners
+                document.addEventListener('keydown', sgHandleEscKey);
+                document.getElementById('sgOverlay').addEventListener('click', sgHandleOverlayClick);
+            }
+            
+            function sgCloseModal() {
+                // Hide modal first
+                document.getElementById('sgSizeModal').classList.remove('active');
+                document.getElementById('sgOverlay').classList.remove('active');
+                
+                // Almost immediate unlocking of scroll
+                setTimeout(() => {
+                    SizeGuideScrollLock.unlock();
+                }, 10);
+                
+                // Remove event listeners
+                document.removeEventListener('keydown', sgHandleEscKey);
+                document.getElementById('sgOverlay').removeEventListener('click', sgHandleOverlayClick);
+            }
+        </script>
+    </body>
+    </html>
